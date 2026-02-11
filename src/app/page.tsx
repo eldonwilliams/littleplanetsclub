@@ -1,37 +1,122 @@
-import Link from "next/link";
+"use client";
 
-export default function HomePage() {
+import { OrbitControls } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useRef, type ComponentProps } from "react";
+import { type Group, Matrix4, Quaternion, Vector3, type Mesh } from "three";
+
+function Sphere({
+  planetColor,
+  ...props
+}: ComponentProps<"group"> & {
+  planetColor?: string;
+}) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-        <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-          Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-        </h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="https://create.t3.gg/en/usage/first-steps"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">First Steps →</h3>
-            <div className="text-lg">
-              Just the basics - Everything you need to know to set up your
-              database and authentication.
-            </div>
-          </Link>
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="https://create.t3.gg/en/introduction"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">Documentation →</h3>
-            <div className="text-lg">
-              Learn more about Create T3 App, the libraries it uses, and how to
-              deploy it.
-            </div>
-          </Link>
-        </div>
+    <>
+      <mesh {...props}>
+        <sphereGeometry args={[1]} />
+        <meshStandardMaterial color={planetColor ?? "#f9554c"} />
+      </mesh>
+    </>
+  );
+}
+
+function PlanetDisplay() {
+  const orbitSphereRef = useRef<Group>(null!);
+  const eyesRef = [useRef<Mesh>(null!), useRef<Mesh>(null!)];
+  const planetRef = useRef<Mesh>(null!);
+  const camera = useThree((state) => state.camera);
+
+  useFrame((state, deltaTime) => {
+    const elapsed = state.clock.getElapsedTime();
+    const orbitSphere = orbitSphereRef.current;
+
+    // orbit
+    const radius = 2;
+    const speed = 0.5;
+
+    // blinking
+    const period = 4;
+    const range = 0.25;
+    const offset = 0.1;
+
+    orbitSphere.position.set(
+      radius * Math.cos(elapsed * speed),
+      Math.sin(elapsed * speed) * 0.5,
+      radius * Math.sin(elapsed * speed),
+    );
+
+    eyesRef.forEach((eye, i) => {
+      const temporalOffset = i * offset;
+      const isBlinking = (elapsed - temporalOffset) % period <= range;
+      eye.current.scale.set(0.1, isBlinking ? 0 : 0.1, 0.1);
+    });
+
+    const rotationMatrix = new Matrix4();
+    rotationMatrix.lookAt(
+      camera.position,
+      planetRef.current.position,
+      new Vector3(0, 1, 0),
+    );
+    const targetQuaternion = new Quaternion();
+    targetQuaternion.setFromRotationMatrix(rotationMatrix);
+    planetRef.current.quaternion.slerp(targetQuaternion, deltaTime);
+  });
+
+  return (
+    <group>
+      <group ref={planetRef}>
+        <Sphere scale={1.25} />
+        <Sphere
+          scale={0.1}
+          ref={eyesRef[0]}
+          planetColor="#000"
+          position={[
+            1.25 * Math.cos(Math.PI / 4 + 0.2),
+            0.15,
+            1.25 * Math.sin(Math.PI / 4 + 0.2),
+          ]}
+        />
+        <Sphere
+          scale={0.1}
+          ref={eyesRef[1]}
+          planetColor="#000"
+          position={[
+            1.25 * Math.cos((3 * Math.PI) / 4 - 0.2),
+            0.15,
+            1.25 * Math.sin((3 * Math.PI) / 4 - 0.2),
+          ]}
+        />
+      </group>
+      <group ref={orbitSphereRef}>
+        <pointLight intensity={Math.PI * 1.5} color="#4CF0F9" />
+        <Sphere scale={0.2} planetColor="#4CF0F9" />
+      </group>
+    </group>
+  );
+}
+
+export default function Page() {
+  return (
+    <div className="h-lvh w-full">
+      <Canvas>
+        <pointLight position={[-10, -10, -10]} />
+        <ambientLight intensity={Math.PI} />
+        <spotLight
+          position={[10, 10, 10]}
+          angle={0.15}
+          penumbra={1}
+          decay={0}
+          intensity={Math.PI}
+        />
+        <PlanetDisplay />
+        <OrbitControls enablePan={false} enableZoom={false} makeDefault />
+      </Canvas>
+      <div className="absolute top-1/2 left-1/2 flex -translate-1/2 flex-col items-center justify-center mix-blend-difference">
+        <p className="pointer-events-none text-6xl font-bold text-white">
+          Little Planet Club
+        </p>
       </div>
-    </main>
+    </div>
   );
 }
