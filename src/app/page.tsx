@@ -3,7 +3,6 @@
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useState } from "react";
-import PlanetEditor from "~/components/PlanetEditor";
 import PlanetView from "~/components/PlanetView";
 import { Button } from "~/components/ui/button";
 import { type PlanetDefinition } from "~/lib/planets";
@@ -41,12 +40,18 @@ export default function Page() {
           {definition?.name ?? ""}
         </p>
       </div>
-      <Button
-        className="absolute bottom-1/3 left-1/2 -translate-x-1/2"
-        onClick={() => setDefinition(GenerateRandomPlanet())}
-      >
-        Generate New Planet
-      </Button>
+      <div className="absolute bottom-1/3 left-1/2 flex -translate-x-1/2 flex-col gap-2">
+        <Button onClick={() => setDefinition(GenerateRandomPlanet())}>
+          Generate New Planet
+        </Button>
+        <Button variant="secondary">Save Planet</Button>
+        <Button
+          variant="destructive"
+          onClick={() => alert("Why would you do that?")}
+        >
+          Destroy Planet
+        </Button>
+      </div>
     </div>
   );
 }
