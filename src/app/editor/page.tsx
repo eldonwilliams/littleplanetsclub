@@ -2,21 +2,16 @@
 
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import PlanetEditor from "~/components/PlanetEditor";
 import PlanetView from "~/components/PlanetView";
-import { Button } from "~/components/ui/button";
 import { type PlanetDefinition } from "~/lib/planets";
-import GenerateRandomPlanet from "~/lib/planets/random";
 
 export default function Page() {
-  const [definition, setDefinition] = useState<PlanetDefinition | undefined>(
-    undefined,
-  );
-
-  useEffect(() => {
-    setDefinition(GenerateRandomPlanet());
-  }, []);
+  const [definition, setDefinition] = useState<PlanetDefinition>({
+    name: "Dug",
+    modifiers: [],
+  });
 
   return (
     <div className="h-lvh w-full">
@@ -30,7 +25,7 @@ export default function Page() {
           decay={0}
           intensity={Math.PI}
         />
-        {definition && <PlanetView definition={definition} />}
+        <PlanetView definition={definition} />
         <OrbitControls enablePan={false} enableZoom={true} makeDefault />
       </Canvas>
       <div className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-1/2 flex-col items-center justify-center mix-blend-difference">
@@ -38,15 +33,14 @@ export default function Page() {
           Little Planets Club
         </p> */}
         <p className="text-3xl font-thin text-white">
-          {definition?.name ?? ""}
+          {definition.name ?? "<No Name>"}
         </p>
       </div>
-      <Button
-        className="absolute bottom-1/3 left-1/2 -translate-x-1/2"
-        onClick={() => setDefinition(GenerateRandomPlanet())}
-      >
-        Generate New Planet
-      </Button>
+      <PlanetEditor
+        definition={definition}
+        setDefinition={setDefinition}
+        className="absolute top-0 left-0"
+      />
     </div>
   );
 }

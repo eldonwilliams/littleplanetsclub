@@ -51,7 +51,7 @@ export const ModifierKeysToPaneSettings: Record<
     description: "Color of the planet",
   },
   eyeSize: {
-    numericRange: [0, 0.2],
+    numericRange: [0.02, 0.2],
     title: "Eye Size",
     description: "Size of the eyes",
   },

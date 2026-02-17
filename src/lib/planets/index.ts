@@ -42,6 +42,16 @@ export const defaultRing: RingPlanetModifier = {
   color: "#d8d2c2",
 }
 
+export const isPlanetDefinition = (object: object): object is PlanetDefinition => {
+  const keys = Object.keys(object);
+  const keyFlag = keys.filter(v => v === "name" || v === "modifiers").length === 2;
+
+  // TODO: Validate each modifier, not super important but could help in edge cases
+  // const modifierFlags = (object as PlanetDefinition).modifiers.map((modifier) => )
+
+  return keyFlag;
+}
+
 export const isPlanetVisualDefinitionModifier = (
   modifier: PlanetModifier,
 ): modifier is PlanetVisualDefinitionPlanetModifier =>
