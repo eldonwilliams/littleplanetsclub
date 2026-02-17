@@ -7,6 +7,7 @@ import PlanetView from "~/components/PlanetView";
 import { Button } from "~/components/ui/button";
 import { type PlanetDefinition } from "~/lib/planets";
 import GenerateRandomPlanet from "~/lib/planets/random";
+import { SerializePlanet } from "~/lib/planets/serialization";
 
 export default function Page() {
   const [definition, setDefinition] = useState<PlanetDefinition | undefined>(
@@ -44,7 +45,14 @@ export default function Page() {
         <Button onClick={() => setDefinition(GenerateRandomPlanet())}>
           Generate New Planet
         </Button>
-        <Button variant="secondary">Save Planet</Button>
+        <Button
+          variant="secondary"
+          onClick={async () => {
+            await navigator.clipboard.writeText(SerializePlanet(definition!));
+          }}
+        >
+          Save Planet
+        </Button>
         <Button
           variant="destructive"
           onClick={() => alert("Why would you do that?")}

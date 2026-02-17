@@ -30,6 +30,7 @@ import { Fragment, useState, type Dispatch, type SetStateAction } from "react";
 import ModifierPane from "./ModifierPane";
 import { ModifierToPaneStrings } from "./Mapping";
 import { Button } from "../ui/button";
+import { DeserializePlanet } from "~/lib/planets/serialization";
 
 export type PlanetEditorProps = Parameters<typeof Card>[0] & {
   definition: PlanetDefinition;
@@ -47,26 +48,46 @@ export default function PlanetEditor({
   return (
     <>
       <Button
-        className={hidden ? "absolute top-16 left-1/2 -translate-x-1/2" : "hidden"}
+        className={
+          hidden ? "absolute top-16 left-1/2 -translate-x-1/2" : "hidden"
+        }
         onClick={() => setHidden(false)}
       >
         Show Editor
       </Button>
       <Card
-        className={`no-scrollbar m-4 max-h-[calc(100vh-var(--spacing)*8)] w-sm overflow-y-scroll bg-transparent shadow-md backdrop-blur-2xl ${hidden && "hidden"} ${className}`}
+        className={`no-scrollbar m-4 max-h-[calc(100vh-var(--spacing)*8)] w-full max-w-sm overflow-y-scroll bg-transparent shadow-md backdrop-blur-2xl ${hidden && "hidden"} ${className}`}
         {...cardProps}
       >
         <CardHeader>
           <CardTitle>Planet Editor</CardTitle>
-          <CardAction>
-            <Button onClick={() => setHidden(true)}>Hide</Button>
-          </CardAction>
           <CardDescription>
             Make your own planet! Not great on mobile, but you can hide this and
             unhide it.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2">
+            <Button onClick={() => setHidden(true)}>Hide</Button>
+            <Button
+              variant="secondary"
+              onClick={async () => {
+                const data = await navigator.clipboard.readText();
+                try {
+                  const planet = DeserializePlanet(data);
+                  if (planet === undefined) {
+                    alert("That didn't work, make sure it was a valid string.");
+                    return;
+                  }
+                  setDefinition(planet);
+                } catch {
+                  alert("There was an issue reading the planet, copy it again please.")
+                }
+              }}
+            >
+              Paste
+            </Button>
+          </div>
           <Field>
             <FieldLabel>Planet Name</FieldLabel>
             <Input
